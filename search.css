@@ -1,0 +1,55 @@
+.loading {
+	display: none;
+    width: 100px;
+    height: 100px;
+
+    position: absolute;
+    top:0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    margin: auto;
+}
+
+.dataset-title a {
+    font-size: 1.2em;
+    text-decoration: none;
+}
+
+.dataset-title a:hover {
+    text-decoration: underline;
+}
+
+.dataset-author {
+    color: #808080;
+}
+
+.search-input {
+    width: 250px;
+}
+
+.resultCount {
+    color: #808080;
+}
+
+.result-query {
+    font-weight: bold;
+}
+
+.pagination {
+	text-align: center;
+	margin: 16px 8px 16px 8px;
+}
+.pagination a {
+	color: black;
+	padding: 8px 16px;
+	text-decoration: none;
+}
+.pagination a.active {
+	background-color: #4CAF50;
+	color: white;
+}
+.pagination a:hover:not(.active) {
+	background-color: #ddd;
+}
