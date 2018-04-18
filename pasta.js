@@ -3,7 +3,7 @@
 "use strict";
 
 var PASTA_CONFIG = {
-    "server": "https://pasta.lternet.edu/package/search/eml?",  // PASTA server
+    "server": "https://pasta-d.lternet.edu/package/search/eml?",  // PASTA server
     "filter": "knb-lter-fce",  // Filter results for an organization or user
     "limit": 10,  // Max number of results to retrieve per page
     "resultsElementId": "searchResults",  // Element to contain results
@@ -124,10 +124,10 @@ function searchPasta(query, coreArea="", start=0) {
     var params = "fl=" + fields + "&defType=edismax";
     var limit = "&rows=" + PASTA_CONFIG["limit"];
     start = "&start=" + start;
-    query = "&fq=scope:" + PASTA_CONFIG["filter"] + "&q=" + query;
-    if (coreArea && coreArea != "any") {
-        query += "," + coreArea;
+    if (coreArea && coreArea !== "any") {
+        query = (query === "*" ? coreArea : query + "," + coreArea);
     }
+    query = "&fq=scope:" + PASTA_CONFIG["filter"] + "&q=" + query;
     var url = base + params + limit + start + query;
     showUrl(url);
     show_loading(true);
@@ -147,7 +147,7 @@ window.onload = function() {
 
     var areas = document.getElementById("coreArea");
     for (var i=0; i < areas.length; i++) {
-        if (coreArea == areas[i].value) {
+        if (coreArea === areas[i].value) {
             areas[i].selected = true;
             break;
         }
