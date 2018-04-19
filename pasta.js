@@ -102,6 +102,16 @@ function successCallback(headers, response) {
     var pageElementId = PASTA_CONFIG["pagesElementId"];
     showPageLinks(count, limit, showPages, currentStart, pageElementId);
     var query = getParameterByName("q");
+    if (query) query = query.trim();
+    var coreArea = getParameterByName("coreArea");
+    if (coreArea && coreArea !== "any") {
+        if (!(query && query.trim())) {
+            query = coreArea + " core area"
+        }
+        else {
+            query += " in " + coreArea + " core area";
+        }
+    }    
     showResultCount(query, count, limit, currentStart, PASTA_CONFIG["countElementId"]);
 }
 
@@ -146,6 +156,7 @@ function searchPasta(query, coreArea="", start=0) {
 // When the window loads, read query parameters and perform search
 window.onload = function() {
     var query = getParameterByName("q");
+    if (query) query = query.trim();
     var start = getParameterByName("start");
     var coreArea = getParameterByName("coreArea");
     document.forms.dataSearchForm.q.value = query;
