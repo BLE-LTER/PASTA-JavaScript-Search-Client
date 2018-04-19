@@ -3,7 +3,7 @@
 "use strict";
 
 var PASTA_CONFIG = {
-    "server": "https://pasta-d.lternet.edu/package/search/eml?",  // PASTA server
+    "server": "https://pasta.lternet.edu/package/search/eml?",  // PASTA server
     "filter": "knb-lter-fce",  // Filter results for an organization or user
     "limit": 10,  // Max number of results to retrieve per page
     "resultsElementId": "searchResults",  // Element to contain results
@@ -39,7 +39,14 @@ function parsePastaResults(xmlDoc) {
         }
         var names = names.join("; ") + " ";
         var date = "(Published " + doc.getElementsByTagName("pubdate")[0].childNodes[0].nodeValue + ")";
-        var link = "http://dx.doi.org/" + doc.getElementsByTagName("doi")[0].childNodes[0].nodeValue;
+        var link = "";
+        try {
+            link = "http://dx.doi.org/" + doc.getElementsByTagName("doi")[0].childNodes[0].nodeValue;
+        }
+        catch(err) {
+            link = ("https://portal.edirepository.org/nis/mapbrowse?packageid="
+                  + doc.getElementsByTagName("packageid")[0].childNodes[0].nodeValue);
+        } 
         var title = '<a rel="external" href="' + link + '" target="_blank">' + 
                     doc.getElementsByTagName("title")[0].childNodes[0].nodeValue.trim() + '</a>';
         var row = '<p><span class="dataset-title">' + title + 
@@ -120,14 +127,15 @@ function searchPasta(query, coreArea="", start=0) {
     var fields = ["title",
                   "pubdate",
                   "doi",
+                  "packageid",
                   "author"].toString();
-    var params = "fl=" + fields + "&defType=edismax";
+    var params = "fl=" + fields + "&defType=edismax&fq=scope:" + PASTA_CONFIG["filter"];
+    if (coreArea && coreArea !== "any") {
+        params += '&fq=keyword:"' + coreArea + '"';
+    }
     var limit = "&rows=" + PASTA_CONFIG["limit"];
     start = "&start=" + start;
-    if (coreArea && coreArea !== "any") {
-        query = (query === "*" ? coreArea : query + "," + coreArea);
-    }
-    query = "&fq=scope:" + PASTA_CONFIG["filter"] + "&q=" + query;
+    query = "&q=" + query;
     var url = base + params + limit + start + query;
     showUrl(url);
     show_loading(true);

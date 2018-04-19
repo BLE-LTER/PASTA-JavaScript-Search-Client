@@ -1,10 +1,5 @@
-
 # PASTA-JavaScript-Search-Client
 Example HTML, CSS, and JavaScript for searching for items in a PASTA repository
-
-## WARNING - NOT YET IMPLEMENTED
-
-EDI must enable CORS on their PASTA server before this code will work.  In the meantime, an XML file representing a response describing two matching datasets is returned as a kluge in `cors.js`.  Eventually, `cors - for when EDI enables cors.js` should replace `cors.js`.
 
 ## Motivation
 
@@ -16,8 +11,10 @@ Open the HTML file in your browser and enter a search term like water. When you 
 
 You can click Search with no terms specified to show the entire catalog, which is the default behavior when you load the page. 
 
-To try filtering by core area, remove the search term and select the Organic Matter core area.
+To try filtering by core area, remove the search term and select the Disturbance core area and click Search.  Then input "water" as the search term and click Search to further refine results.
+
+Note: We assume the LTER Core Area was included as a **keyword** in the metadata when the data publisher submitted the data to the archive. If your site follows different conventions, you will need to modify `pasta.js` to filter by core area.
 
 ## Customization
 
-To change parameters such as how many search results to show at a time, see the PASTA_CONFIG variable in pasta.js.  There you can also change the server being queried and a filter for the group or user whose datasets you want to search.
+To change parameters such as how many search results to show at a time, see the `PASTA_CONFIG` variable in `pasta.js`.  There you can also set the group or user whose datasets you want to search.
