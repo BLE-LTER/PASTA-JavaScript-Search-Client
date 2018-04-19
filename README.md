@@ -1,6 +1,8 @@
 # PASTA-JavaScript-Search-Client
 Example HTML, CSS, and JavaScript for searching for items in a PASTA repository
 
+[Live demo at RawGit](https://cdn.rawgit.com/twhiteaker/PASTA-JavaScript-Search-Client/99991389/demo.html)
+
 ## Motivation
 
 [LTER sites](https://lternet.edu/) which archive data at [EDI](https://environmentaldatainitiative.org/) may wish to use the [PASTA API](http://pastaplus-core.readthedocs.io/en/latest/doc_tree/pasta_api/data_package_manager_api.html) to create a searchable data catalog on their [static websites](https://en.wikipedia.org/wiki/Static_web_page).  Data catalogs must support searching by term as well as browsing by LTER core area. This project includes example code supporting such functionality, along with pagination since thousands of results could be returned.
