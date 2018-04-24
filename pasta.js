@@ -41,7 +41,12 @@ function parsePastaResults(xmlDoc) {
         var date = "(Published " + doc.getElementsByTagName("pubdate")[0].childNodes[0].nodeValue + ")";
         var link = "";
         try {
-            link = "http://dx.doi.org/" + doc.getElementsByTagName("doi")[0].childNodes[0].nodeValue;
+            var doi = doc.getElementsByTagName("doi")[0].childNodes[0].nodeValue;
+            if (doi.slice(0, 4) === "doi:") {
+                doi = doi.slice(4);
+            }
+            
+            link = "http://dx.doi.org/" + doi;
         }
         catch(err) {
             link = ("https://portal.edirepository.org/nis/mapbrowse?packageid="
@@ -125,6 +130,7 @@ function errorCallback() {
 
 // Writes CORS request URL to the page so user can see it
 function showUrl(url) {
+    url = encodeURI(url);
     var txt = '<a href="' + url + '" target="_blank">' + url + '</a>';
     var element = document.getElementById(PASTA_CONFIG["urlElementId"]);
     element.innerHTML = txt;
@@ -146,7 +152,7 @@ function searchPasta(query, coreArea="", start=0) {
     var limit = "&rows=" + PASTA_CONFIG["limit"];
     start = "&start=" + start;
     query = "&q=" + query;
-    var url = base + params + limit + start + query;
+    var url = base + params + query + limit + start;
     showUrl(url);
     show_loading(true);
     makeCorsRequest(url, successCallback, errorCallback);
