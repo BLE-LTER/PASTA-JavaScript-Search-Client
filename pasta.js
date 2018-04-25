@@ -4,7 +4,7 @@
 
 var PASTA_CONFIG = {
     "server": "https://pasta.lternet.edu/package/search/eml?",  // PASTA server
-    "filter": "knb-lter-fce",  // Filter results for an organization or user
+    "filter": "&fq=scope:knb-lter-fce",  // Filter results for an LTER site
     "limit": 10,  // Max number of results to retrieve per page
     "resultsElementId": "searchResults",  // Element to contain results
     "urlElementId": "searchUrl",  // Element to display search URL
@@ -145,7 +145,7 @@ function searchPasta(query, coreArea="", start=0) {
                   "doi",
                   "packageid",
                   "author"].toString();
-    var params = "fl=" + fields + "&defType=edismax&fq=scope:" + PASTA_CONFIG["filter"];
+    var params = "fl=" + fields + "&defType=edismax" + PASTA_CONFIG["filter"];
     if (coreArea && coreArea !== "any") {
         params += '&fq=keyword:"' + coreArea + '"';
     }
