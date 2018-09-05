@@ -138,7 +138,7 @@ function showUrl(url) {
 
 
 // Passes search URL and callbacks to CORS function
-function searchPasta(query, coreArea="", start=0) {
+function searchPasta(query, coreArea, start) {
     var base = PASTA_CONFIG["server"];
     var fields = ["title",
                   "pubdate",
@@ -150,6 +150,7 @@ function searchPasta(query, coreArea="", start=0) {
         params += '&fq=keyword:"' + coreArea + '"';
     }
     var limit = "&rows=" + PASTA_CONFIG["limit"];
+    if (start === undefined) start = "0";
     start = "&start=" + start;
     query = "&q=" + query;
     var url = base + params + query + limit + start;
