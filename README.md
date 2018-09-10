@@ -9,13 +9,11 @@ Example HTML, CSS, and JavaScript for searching for items in a PASTA repository
 
 ## Usage
 
-Open the HTML file in your browser and enter a search term like water. When you click Search, the application searches for datasets at EDI for the [FCE LTER site](http://fcelter.fiu.edu/). Results are summarized on the page with external links to more details at the original data archive.
+Open the HTML file in your browser and enter a search term like water. When you click Search, the application searches for datasets at EDI for the [NWT LTER site](http://niwot.colorado.edu/). Results are summarized on the page with external links to more details at the original data archive.
 
 You can click Search with no terms specified to show the entire catalog, which is the default behavior when you load the page. 
 
-To try filtering by core area, remove the search term and select the Disturbance core area and click Search.  Then input "water" as the search term and click Search to further refine results.
-
-Note: We assume the LTER Core Area was included as a **keyword** in the metadata when the data publisher submitted the data to the archive. If your site follows different conventions, you will need to modify `pasta.js` to filter by core area.
+Note: We assume the LTER Core Area was included as a **keyword** in the metadata when the data publisher submitted the data to the archive. If your site follows different conventions, you will need to modify `pasta.js` to filter by core area.  
 
 ## Customization
 
