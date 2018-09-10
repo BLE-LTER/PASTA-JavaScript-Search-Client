@@ -38,7 +38,12 @@ function parsePastaResults(xmlDoc) {
          names.push(authors[j].childNodes[0].nodeValue);
       }
       var names = names.join("; ") + " ";
-      var date = "(Published " + doc.getElementsByTagName("pubdate")[0].childNodes[0].nodeValue + ")";
+      var date;
+      try {
+         date = "(Published " + doc.getElementsByTagName("pubdate")[0].childNodes[0].nodeValue + ")";
+      } catch (error) {
+         date = "";
+      }
       var link = "";
       try {
          var doi = doc.getElementsByTagName("doi")[0].childNodes[0].nodeValue;
