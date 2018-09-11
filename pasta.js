@@ -9,8 +9,10 @@ var PASTA_CONFIG = {
    "resultsElementId": "searchResults",  // Element to contain results
    "urlElementId": "searchUrl",  // Element to display search URL
    "countElementId": "resultCount",  // Element showing number of results
-   "pagesElementId": "pagination",  // Element to display result page links
-   "showPages": 5  // MUST BE ODD NUMBER! Max number of page links to show
+   "pagesTopElementId": "paginationTop",  // Element to display result page links above results
+   "pagesBotElementId": "paginationBot",  // Element to display result page links below results
+   "showPages": 5,  // MUST BE ODD NUMBER! Max number of page links to show
+   "sortDiv": "sortDiv"  // Element with interactive sort options
 };
 
 
@@ -30,17 +32,18 @@ function getParameterByName(name, url) {
 function parsePastaResults(xmlDoc) {
    var docs = xmlDoc.getElementsByTagName("document");
    var html = [];
+   var sortDiv = document.getElementById(PASTA_CONFIG["sortDiv"]);
+   if (docs.length)
+      sortDiv.style.display = "block";
+   else
+      sortDiv.style.display = "none";
    for (var i = 0; i < docs.length; i++) {
       var doc = docs[i];
-      var authors = doc.getElementsByTagName("author");
-      var names = [];
-      for (var j = 0; j < authors.length; j++) {
-         names.push(authors[j].childNodes[0].nodeValue);
-      }
-      var names = names.join("; ") + " ";
+      var authors = doc.getElementsByTagName("responsibleParties")[0].childNodes[0].nodeValue.trim();
+      var names = authors.replace(/\r?\n/g, "; ");
       var date;
       try {
-         date = "(Published " + doc.getElementsByTagName("pubdate")[0].childNodes[0].nodeValue + ")";
+         date = " (Published " + doc.getElementsByTagName("pubdate")[0].childNodes[0].nodeValue + ")";
       } catch (error) {
          date = "";
       }
@@ -108,8 +111,10 @@ function successCallback(headers, response) {
    var count = parseInt(xmlDoc.getElementsByTagName("resultset")[0].getAttribute("numFound"));
    var limit = parseInt(PASTA_CONFIG["limit"]);
    var showPages = parseInt(PASTA_CONFIG["showPages"]);
-   var pageElementId = PASTA_CONFIG["pagesElementId"];
-   showPageLinks(count, limit, showPages, currentStart, pageElementId);
+   var pageTopElementId = PASTA_CONFIG["pagesTopElementId"];
+   var pageBotElementId = PASTA_CONFIG["pagesBotElementId"];
+   showPageLinks(count, limit, showPages, currentStart, pageTopElementId);
+   showPageLinks(count, limit, showPages, currentStart, pageBotElementId);
    showResultCount("", count, limit, currentStart, PASTA_CONFIG["countElementId"]);
 }
 
@@ -145,15 +150,26 @@ function makeDateQuery(sYear, eYear, datayear, pubyear) {
 }
 
 
+function makeSortParam(sortBy) {
+   var param = "&sort=" + sortBy + ",";
+   if (sortBy === "score" || sortBy === "pubdate" || sortBy === "enddate")
+      param += "desc";
+   else
+      param += "asc";
+   param += "&sort=packageid,asc";
+   return param;
+}
+
+
 // Passes search URL and callbacks to CORS function
 function searchPasta(userQuery, coreArea, creator, sYear, eYear, datayear, pubyear,
-   pkgId, taxon, geo, pageStart) {
+   pkgId, taxon, geo, sortBy, pageStart) {
    var base = PASTA_CONFIG["server"];
    var fields = ["title",
       "pubdate",
       "doi",
       "packageid",
-      "author"].toString();
+      "responsibleParties"].toString();
    var params = "fl=" + fields + "&defType=edismax" + PASTA_CONFIG["filter"];
    if (coreArea && coreArea !== "any") {
       params += '&fq=keyword:"' + coreArea + '"';
@@ -169,7 +185,8 @@ function searchPasta(userQuery, coreArea, creator, sYear, eYear, datayear, pubye
    if (taxon) query += "+AND+taxonomic:" + taxon;
    if (geo) query += "+AND+geographicdescription:" + geo;
    var dateQuery = makeDateQuery(sYear, eYear, datayear, pubyear);
-   var url = base + params + query + dateQuery + limit + start;
+   var sort = makeSortParam(sortBy);
+   var url = base + params + query + dateQuery + limit + start + sort;
    showUrl(url);
    show_loading(true);
    makeCorsRequest(url, successCallback, errorCallback);
@@ -228,6 +245,18 @@ function initCollapsible(expanded) {
    };
 }
 
+function initApp(expanded) {
+   initCollapsible(expanded);
+
+   var sortControl = document.getElementById("visibleSort");
+   sortControl.onchange = function () {
+      var hiddenSortControl = document.getElementById("sort");
+      hiddenSortControl.value = this.options[this.selectedIndex].value;
+      var form = document.getElementById("dataSearchForm");
+      form.submit();
+   };
+}
+
 function clearParams() {
    var areas = document.getElementById("coreArea");
    areas[0].selected = true;
@@ -240,6 +269,24 @@ function clearParams() {
    document.forms.dataSearchForm.min_year.value = "1900";
    document.forms.dataSearchForm.max_year.value = "2018";
 }
+
+
+// Selects the desired value in the Select control. If value is not in the
+// control, then first index is used. Returns actual selected value.
+function setSelectValue(elId, desiredValue) {
+   var el = document.getElementById(elId);
+   if (!el || !el.length) return null;
+   var result = el[0].value;
+   for (var i = 0; i < el.length; i++) {
+      if (desiredValue === el[i].value) {
+         el[i].selected = true;
+         result = desiredValue;
+         break;
+      }
+   }
+   return result;
+}
+
 
 // When the window loads, read query parameters and perform search
 window.onload = function () {
@@ -255,6 +302,7 @@ window.onload = function () {
    var geo = getParameterByName("geo");
    var expanded = Boolean(getParameterByName("expanded"));
    var pageStart = getParameterByName("start");
+   var sortParam = getParameterByName("sort");
    if (!pageStart) pageStart = 0;
 
    document.forms.dataSearchForm.q.value = query;
@@ -264,16 +312,9 @@ window.onload = function () {
    document.forms.dataSearchForm.geo.value = geo;
    document.forms.dataSearchForm.data_year.checked = datayear;
    document.forms.dataSearchForm.publish_year.checked = pubyear;
-
-   var areas = document.getElementById("coreArea");
-   var coreArea = "any";
-   for (var i = 0; i < areas.length; i++) {
-      if (coreAreaParam === areas[i].value) {
-         areas[i].selected = true;
-         coreArea = coreAreaParam;
-         break;
-      }
-   }
+   var coreArea = setSelectValue("coreArea", coreAreaParam);
+   var sortBy = setSelectValue("visibleSort", sortParam);
+   document.forms.dataSearchForm.sort.value = sortBy;
 
    if (Number.isInteger(sYear))
       document.forms.dataSearchForm.min_year.value = sYear;
@@ -282,9 +323,9 @@ window.onload = function () {
    if (!Number.isInteger(eYear)) eYear = (new Date()).getFullYear()
    document.forms.dataSearchForm.max_year.value = eYear;
 
-   initCollapsible(expanded);
+   initApp(expanded);
 
    if (!query) query = "*";  // default for empty query
    searchPasta(query, coreArea, creator, sYear, eYear, datayear, pubyear,
-      pkgId, taxon, geo, pageStart);
+      pkgId, taxon, geo, sortBy, pageStart);
 };
