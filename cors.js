@@ -6,6 +6,7 @@ function createCORSRequest(method, url) {
    var xhr = new XMLHttpRequest();
    if ("withCredentials" in xhr) {
       // XHR for Chrome/Firefox/Opera/Safari.
+      //url = encodeURI(url);
       xhr.open(method, url, true);
    } else if (typeof XDomainRequest != "undefined") {
       // XDomainRequest for IE.
@@ -25,7 +26,6 @@ function makeCorsRequest(url, successCallback, errorCallback) {
       alert("CORS not supported");
       return;
    }
-
    // Response handlers.
    xhr.onload = function () {
       var headers = xhr.getAllResponseHeaders().split("\n");
@@ -34,13 +34,10 @@ function makeCorsRequest(url, successCallback, errorCallback) {
          var parts = headers[i].split(": ");
          header_dict[parts[0].toLowerCase()] = parts[1];
       }
-
       successCallback(header_dict, xhr.responseText);
    };
-
    xhr.onerror = function () {
       errorCallback();
    };
-
    xhr.send();
 }

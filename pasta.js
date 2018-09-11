@@ -128,7 +128,6 @@ function errorCallback() {
 
 // Writes CORS request URL to the page so user can see it
 function showUrl(url) {
-   url = encodeURI(url);
    var txt = '<a href="' + url + '" target="_blank">' + url + '</a>';
    var element = document.getElementById(PASTA_CONFIG["urlElementId"]);
    element.innerHTML = txt;
@@ -186,7 +185,7 @@ function searchPasta(userQuery, coreArea, creator, sYear, eYear, datayear, pubye
    if (geo) query += "+AND+geographicdescription:" + geo;
    var dateQuery = makeDateQuery(sYear, eYear, datayear, pubyear);
    var sort = makeSortParam(sortBy);
-   var url = base + params + query + dateQuery + limit + start + sort;
+   var url = base + encodeURI(params + query + dateQuery + limit + start + sort);
    showUrl(url);
    show_loading(true);
    makeCorsRequest(url, successCallback, errorCallback);
@@ -288,6 +287,11 @@ function setSelectValue(elId, desiredValue) {
 }
 
 
+function isInteger(x) {
+   return (typeof x === 'number') && (x % 1 === 0);
+}
+
+
 // When the window loads, read query parameters and perform search
 window.onload = function () {
    var query = getParameterByName("q");
@@ -316,11 +320,11 @@ window.onload = function () {
    var sortBy = setSelectValue("visibleSort", sortParam);
    document.forms.dataSearchForm.sort.value = sortBy;
 
-   if (Number.isInteger(sYear))
+   if (isInteger(sYear))
       document.forms.dataSearchForm.min_year.value = sYear;
    else
       sYear = document.forms.dataSearchForm.min_year.value;
-   if (!Number.isInteger(eYear)) eYear = (new Date()).getFullYear()
+   if (!isInteger(eYear)) eYear = (new Date()).getFullYear()
    document.forms.dataSearchForm.max_year.value = eYear;
 
    initApp(expanded);
