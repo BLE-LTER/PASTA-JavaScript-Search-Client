@@ -33,10 +33,12 @@ function parsePastaResults(xmlDoc) {
    var docs = xmlDoc.getElementsByTagName("document");
    var html = [];
    var sortDiv = document.getElementById(PASTA_CONFIG["sortDiv"]);
-   if (docs.length)
-      sortDiv.style.display = "block";
-   else
-      sortDiv.style.display = "none";
+   if (sortDiv) {
+      if (docs.length)
+         sortDiv.style.display = "block";
+      else
+         sortDiv.style.display = "none";
+   }
    for (var i = 0; i < docs.length; i++) {
       var doc = docs[i];
       var authors = doc.getElementsByTagName("responsibleParties")[0].childNodes[0].nodeValue.trim();
@@ -128,8 +130,9 @@ function errorCallback() {
 
 // Writes CORS request URL to the page so user can see it
 function showUrl(url) {
-   var txt = '<a href="' + url + '" target="_blank">' + url + '</a>';
    var element = document.getElementById(PASTA_CONFIG["urlElementId"]);
+   if (!element) return;
+   var txt = '<a href="' + url + '" target="_blank">' + url + '</a>';
    element.innerHTML = txt;
 }
 
@@ -176,7 +179,7 @@ function searchPasta(userQuery, coreArea, creator, sYear, eYear, datayear, pubye
    var limit = "&rows=" + PASTA_CONFIG["limit"];
    var start = "&start=" + pageStart;
    var query = "&q=" + userQuery;
-   if (creator) query += "+AND+author:" + creator;
+   if (creator) query += '+AND+(author:"' + creator + '"+OR+organization:"' + creator + '")';
    if (pkgId) {
       pkgId = pkgId.replace(":", "%5C:");
       query += "+AND+(doi:" + pkgId + "+packageid:" + pkgId + "+id:" + pkgId + ")";
@@ -292,6 +295,23 @@ function isInteger(x) {
 }
 
 
+function makeAutocomplete(elementId, choices, minChars) {
+   if (!minChars) minChars = 2;
+   var autocomplete = new autoComplete({
+      selector: "#" + elementId,
+      minChars: minChars,
+      source: function (term, suggest) {
+         term = term.toLowerCase();
+         var suggestions = [];
+         for (var i = 0; i < choices.length; i++)
+            if (~choices[i].toLowerCase().indexOf(term)) suggestions.push(choices[i]);
+         suggest(suggestions);
+      }
+   });
+   return autocomplete;
+}
+
+
 // When the window loads, read query parameters and perform search
 window.onload = function () {
    var query = getParameterByName("q");
@@ -332,4 +352,7 @@ window.onload = function () {
    if (!query) query = "*";  // default for empty query
    searchPasta(query, coreArea, creator, sYear, eYear, datayear, pubyear,
       pkgId, taxon, geo, sortBy, pageStart);
+
+   makeAutocomplete("creator", PASTA_LOOKUP["responsibleParties"]);
+   makeAutocomplete("taxon", PASTA_LOOKUP["taxonomic"]);
 };
