@@ -83,7 +83,8 @@ function escapeHtml(unsafe) {
 
 
 function showResultCount(query, total, limitPerPage, currentStartIndex, domElementId) {
-   if (total == 0) {
+   var element = document.getElementById(domElementId);
+   if (total == 0 || !element) {
       return;
    }
 
@@ -110,6 +111,5 @@ function showResultCount(query, total, limitPerPage, currentStartIndex, domEleme
       }
       var showing = (". Showing results " + fromCount + " to " + toCount + ".</p>");
    }
-   var element = document.getElementById(domElementId);
    element.innerHTML = found + forQuery + showing;
 }

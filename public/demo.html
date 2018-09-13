@@ -7,14 +7,19 @@
    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU"
       crossorigin="anonymous">
    <link href="search.css" rel="stylesheet" type="text/css">
+   <link href="auto-complete.css" rel="stylesheet" type="text/css">
    <script src="cors.js"></script>
    <script src="pagination.js"></script>
+   <script src="auto-complete.min.js"></script>
+   <script src="pasta_lookup.js"></script>
    <script src="pasta.js"></script>
 </head>
 
 <body>
    <p>Enter a search term like "water", or click <strong>Advanced</strong> for more options.
-      Datasets from the NWT LTER site will be searched.</p>
+      Datasets from the NWT LTER site will be summarized on the page with external links to more details at the
+      original data archive. If you do not enter any search terms, all datasets for the given LTER site will be
+      returned, which is the default behavior when first loading the page.</p>
    <form id="dataSearchForm" name="dataSearchForm">
       <input type="hidden" id="sort" name="sort" value="score">
       <input class="search-input" name="q" placeholder="Enter search term" type="text">
