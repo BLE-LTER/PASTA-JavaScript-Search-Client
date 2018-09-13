@@ -163,6 +163,15 @@ function makeSortParam(sortBy) {
 }
 
 
+// Enclose text in quotes if there are spaces and if the text does not already include quotes or special operators
+function addQuotes(text) {
+   if (!~text.indexOf(" ") || ~text.indexOf("+") || ~text.indexOf('"'))
+      return text;
+   else
+      return '"' + text + '"';
+}
+
+
 // Passes search URL and callbacks to CORS function
 function searchPasta(userQuery, coreArea, creator, sYear, eYear, datayear, pubyear,
    pkgId, taxon, geo, sortBy, pageStart) {
@@ -179,13 +188,13 @@ function searchPasta(userQuery, coreArea, creator, sYear, eYear, datayear, pubye
    var limit = "&rows=" + PASTA_CONFIG["limit"];
    var start = "&start=" + pageStart;
    var query = "&q=" + userQuery;
-   if (creator) query += '+AND+(author:"' + creator + '"+OR+organization:"' + creator + '")';
+   if (creator) query += "+AND+(author:" + addQuotes(creator) + "+OR+organization:" + addQuotes(creator) + ")";
    if (pkgId) {
       pkgId = pkgId.replace(":", "%5C:");
       query += "+AND+(doi:" + pkgId + "+packageid:" + pkgId + "+id:" + pkgId + ")";
    }
-   if (taxon) query += "+AND+taxonomic:" + taxon;
-   if (geo) query += "+AND+geographicdescription:" + geo;
+   if (taxon) query += "+AND+taxonomic:" + addQuotes(taxon);
+   if (geo) query += "+AND+geographicdescription:" + addQuotes(geo);
    var dateQuery = makeDateQuery(sYear, eYear, datayear, pubyear);
    var sort = makeSortParam(sortBy);
    var url = base + encodeURI(params + query + dateQuery + limit + start + sort);
