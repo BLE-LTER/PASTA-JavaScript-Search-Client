@@ -21,7 +21,7 @@ const OUT_FILE = "pasta_lookup.js";
 
 
 function parseTaxa(doc) {
-   var invalid = ["kingdom", "phylum", "class", "order", "family", "genus", "species"];
+   var invalid = ["Division or Phylum", "kingdom", "phylum", "class", "order", "family", "genus", "species"].map(v => v.toLowerCase());
    function isValid(taxa) {
       return taxa && invalid.indexOf(taxa.toLowerCase()) === -1;
    }
