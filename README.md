@@ -1,7 +1,7 @@
 # PASTA-JavaScript-Search-Client
 Example HTML, CSS, and JavaScript for searching for items in a PASTA repository
 
-[Live demo at RawGit](https://cdn.rawgit.com/BLE-LTER/PASTA-JavaScript-Search-Client/2915f81b/public/demo.html)
+[Live demo at RawGit](https://cdn.rawgit.com/BLE-LTER/PASTA-JavaScript-Search-Client/13b502c5/public/demo.html)
 
 ## Motivation
 
