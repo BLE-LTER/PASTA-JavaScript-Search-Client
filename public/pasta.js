@@ -266,7 +266,7 @@ function makeQueryUrlBase(userQuery, coreArea, creator, sYear, eYear, datayear, 
    if (geo) query += "+AND+geographicdescription:" + addQuotes(geo);
    var dateQuery = makeDateQuery(sYear, eYear, datayear, pubyear);
    var sort = makeSortParam(sortBy);
-   var url = base + encodeURI(params + query + dateQuery, sort);
+   var url = base + encodeURI(params + query + dateQuery + sort);
    return url;
 }
 
