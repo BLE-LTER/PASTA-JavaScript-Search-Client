@@ -35,4 +35,9 @@ One way to generate the choice arrays is to harvest metadata for all datasets fo
 
 ### Caveats
 
-The success of search queries depends upon the metadata that the LTER site provided when submitting data to the archive.  For example, we assume the LTER Core Area was included as a **keyword** in the metadata.  If your site follows different conventions, you will need to modify `pasta.js` to filter accordingly.  
+The success of search queries depends upon the metadata that the LTER site provided when submitting data to the archive.  For example, we assume the LTER Core Area was included as a **keyword** in the metadata.  If your site follows different conventions, you will need to modify `pasta.js` to filter accordingly.
+
+## Acknowledgments
+
+CSV export uses uselesscode's JS CSV serializer (MIT Licensed):
+http://www.uselesscode.org/javascript/csv/
