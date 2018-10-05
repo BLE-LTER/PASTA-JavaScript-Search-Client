@@ -75,7 +75,7 @@ function parsePastaResults(xmlDoc) {
    }
 }
 
-function show_loading(isLoading) {
+function showLoading(isLoading) {
    var x = document.getElementById("loading-div");
    if (isLoading) {
       document.body.style.cursor = "wait";
@@ -95,7 +95,7 @@ function setHtml(elId, innerHtml) {
 }
 
 function downloadCsv(count) {
-   if (count) show_loading(true);
+   if (count) showLoading(true);
    var limit = 2000;
    var calls = count / limit;
    if (parseInt(calls) != calls) calls = parseInt(calls) + 1;
@@ -139,7 +139,7 @@ function downloadCsv(count) {
          var blob = new Blob([csv], {
             type: 'text/csv;charset=utf-8;'
          });
-         show_loading(false);
+         showLoading(false);
          if (navigator.msSaveBlob) { // IE 10+
             navigator.msSaveBlob(blob, exportedFilenmae);
          } else {
@@ -176,7 +176,7 @@ function makeCsvLink(count) {
 
 // Function to call if CORS request is successful
 function successCallback(headers, response) {
-   show_loading(false);
+   showLoading(false);
 
    // Write results to page
    var parser = new DOMParser();
@@ -203,7 +203,7 @@ function successCallback(headers, response) {
 
 // Function to call if CORS request fails
 function errorCallback() {
-   show_loading(false);
+   showLoading(false);
    alert("There was an error making the request.");
 }
 
@@ -213,69 +213,12 @@ function showUrl(url) {
    setHtml(PASTA_CONFIG["urlElementId"], txt);
 }
 
-function makeDateQuery(sYear, eYear, datayear, pubyear) {
-   var query = "";
-   if (datayear && !pubyear) {
-      query = "&fq=(singledate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+" + eYear + "-12-31T00:00:00Z/DAY]+OR+(begindate:[*+TO+" + eYear + "-12-31T00:00:00Z/DAY]+AND+enddate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+NOW]))";
-   } else if (pubyear && !datayear) {
-      query = "&fq=pubdate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+" + eYear + "-12-31T00:00:00Z/DAY]";
-   } else if (datayear && pubyear) {
-      query = "&fq=(pubdate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+" + eYear + "-12-31T00:00:00Z/DAY]+AND+(singledate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+" + eYear + "-12-31T00:00:00Z/DAY]+OR+(begindate:[*+TO+" + eYear + "-12-31T00:00:00Z/DAY]+AND+enddate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+NOW])))";
-   }
-   return query;
-}
-
-function makeSortParam(sortBy) {
-   var param = "&sort=" + sortBy + ",";
-   if (sortBy === "score" || sortBy === "pubdate" || sortBy === "enddate")
-      param += "desc";
-   else
-      param += "asc";
-   param += "&sort=packageid,asc";
-   return param;
-}
-
-// Enclose text in quotes if there are spaces and if the text does not already include quotes or special operators
-function addQuotes(text) {
-   if (!~text.indexOf(" ") || ~text.indexOf("+") || ~text.indexOf('"'))
-      return text;
-   else
-      return '"' + text + '"';
-}
-
-function makeQueryUrlBase(userQuery, coreArea, creator, sYear, eYear, datayear, pubyear,
-   pkgId, taxon, geo, sortBy) {
-   var base = PASTA_CONFIG["server"];
-   var fields = ["title",
-      "pubdate",
-      "doi",
-      "packageid",
-      "responsibleParties"
-   ].toString();
-   var params = "fl=" + fields + "&defType=edismax" + PASTA_CONFIG["filter"];
-   if (coreArea && coreArea !== "any") {
-      params += '&fq=keyword:"' + coreArea + '"';
-   }
-   var query = "&q=" + userQuery;
-   if (creator) query += "+AND+(author:" + addQuotes(creator) + "+OR+organization:" + addQuotes(creator) + ")";
-   if (pkgId) {
-      pkgId = pkgId.replace(":", "%5C:");
-      query += "+AND+(doi:" + pkgId + "+packageid:" + pkgId + "+id:" + pkgId + ")";
-   }
-   if (taxon) query += "+AND+taxonomic:" + addQuotes(taxon);
-   if (geo) query += "+AND+geographicdescription:" + addQuotes(geo);
-   var dateQuery = makeDateQuery(sYear, eYear, datayear, pubyear);
-   var sort = makeSortParam(sortBy);
-   var url = base + encodeURI(params + query + dateQuery + sort);
-   return url;
-}
-
 // Passes search URL and callbacks to CORS function
 function searchPasta(limit, pageStart) {
    var params = "&rows=" + limit + "&start=" + pageStart;
    var url = QUERY_URL + params;
    showUrl(url);
-   show_loading(true);
+   showLoading(true);
    makeCorsRequest(url, successCallback, errorCallback);
 }
 
@@ -331,18 +274,6 @@ function initCollapsible(expanded) {
    };
 }
 
-function initApp(expanded) {
-   initCollapsible(expanded);
-
-   var sortControl = document.getElementById("visibleSort");
-   sortControl.onchange = function () {
-      var hiddenSortControl = document.getElementById("sort");
-      hiddenSortControl.value = this.options[this.selectedIndex].value;
-      var form = document.getElementById("dataSearchForm");
-      form.submit();
-   };
-}
-
 function clearParams() {
    var areas = document.getElementById("coreArea");
    areas[0].selected = true;
@@ -395,6 +326,76 @@ function makeAutocomplete(elementId, choices, minChars) {
 
 // When the window loads, read query parameters and perform search
 window.onload = function () {
+   function initApp(expanded) {
+      initCollapsible(expanded);
+
+      var sortControl = document.getElementById("visibleSort");
+      sortControl.onchange = function () {
+         var hiddenSortControl = document.getElementById("sort");
+         hiddenSortControl.value = this.options[this.selectedIndex].value;
+         var form = document.getElementById("dataSearchForm");
+         form.submit();
+      };
+   }
+
+   function makeQueryUrlBase(userQuery, coreArea, creator, sYear, eYear, datayear, pubyear,
+      pkgId, taxon, geo, sortBy) {
+
+      function makeDateQuery(sYear, eYear, datayear, pubyear) {
+         var query = "";
+         if (datayear && !pubyear) {
+            query = "&fq=(singledate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+" + eYear + "-12-31T00:00:00Z/DAY]+OR+(begindate:[*+TO+" + eYear + "-12-31T00:00:00Z/DAY]+AND+enddate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+NOW]))";
+         } else if (pubyear && !datayear) {
+            query = "&fq=pubdate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+" + eYear + "-12-31T00:00:00Z/DAY]";
+         } else if (datayear && pubyear) {
+            query = "&fq=(pubdate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+" + eYear + "-12-31T00:00:00Z/DAY]+AND+(singledate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+" + eYear + "-12-31T00:00:00Z/DAY]+OR+(begindate:[*+TO+" + eYear + "-12-31T00:00:00Z/DAY]+AND+enddate:[" + sYear + "-01-01T00:00:00Z/DAY+TO+NOW])))";
+         }
+         return query;
+      }
+
+      function makeSortParam(sortBy) {
+         var param = "&sort=" + sortBy + ",";
+         if (sortBy === "score" || sortBy === "pubdate" || sortBy === "enddate")
+            param += "desc";
+         else
+            param += "asc";
+         param += "&sort=packageid,asc";
+         return param;
+      }
+
+      // Enclose text in quotes if there are spaces and if the text does not already include quotes or special operators
+      function addQuotes(text) {
+         if (!~text.indexOf(" ") || ~text.indexOf("+") || ~text.indexOf('"'))
+            return text;
+         else
+            return '"' + text + '"';
+      }
+
+      var base = PASTA_CONFIG["server"];
+      var fields = ["title",
+         "pubdate",
+         "doi",
+         "packageid",
+         "responsibleParties"
+      ].toString();
+      var params = "fl=" + fields + "&defType=edismax" + PASTA_CONFIG["filter"];
+      if (coreArea && coreArea !== "any") {
+         params += '&fq=keyword:"' + coreArea + '"';
+      }
+      var query = "&q=" + userQuery;
+      if (creator) query += "+AND+(author:" + addQuotes(creator) + "+OR+organization:" + addQuotes(creator) + ")";
+      if (pkgId) {
+         pkgId = pkgId.replace(":", "%5C:");
+         query += "+AND+(doi:" + pkgId + "+packageid:" + pkgId + "+id:" + pkgId + ")";
+      }
+      if (taxon) query += "+AND+taxonomic:" + addQuotes(taxon);
+      if (geo) query += "+AND+geographicdescription:" + addQuotes(geo);
+      var dateQuery = makeDateQuery(sYear, eYear, datayear, pubyear);
+      var sort = makeSortParam(sortBy);
+      var url = base + encodeURI(params + query + dateQuery + sort);
+      return url;
+   }
+
    var query = getParameterByName("q");
    var coreAreaParam = getParameterByName("coreArea");
    var creator = getParameterByName("creator");
