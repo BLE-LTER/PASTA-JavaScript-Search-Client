@@ -167,15 +167,15 @@ function downloadCsv(count) {
    return false; // Prevents calling function from following href
 }
 
-function makeCsvLink(count) {
-   if (!count) return "";
-   var html = '<a href="" onclick="return downloadCsv(' + count + ');">' +
-      'Download all results as CSV</a>';
-   return html;
-}
-
 // Function to call if CORS request is successful
 function successCallback(headers, response) {
+   function makeCsvLink(count) {
+      if (!count) return "";
+      var html = '<a href="" onclick="return downloadCsv(' + count + ');">' +
+         'Download all results as CSV</a>';
+      return html;
+   }
+
    showLoading(false);
 
    // Write results to page
