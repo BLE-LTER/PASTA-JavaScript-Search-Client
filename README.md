@@ -3,6 +3,12 @@ Example HTML, CSS, and JavaScript for searching for items in a PASTA repository
 
 [Live demo at RawGit](https://cdn.rawgit.com/BLE-LTER/PASTA-JavaScript-Search-Client/13b502c5/public/demo.html)
 
+Want to try the demo for your site?
+
+1. Download and unzip this repository.
+2. In `public/pasta.js`, find the `PASTA_CONFIG` variable at the top of the file. Change its `filter` property to match your site. This probably just means swapping out the three letter acronym for your site's acronym. For example, to search the VCR LTER site, use `"&fq=scope:knb-lter-vcr"`. Save and close the file.
+3. Double-click demo.html.
+
 ## Motivation
 
 [LTER sites](https://lternet.edu/) which archive data at [EDI](https://environmentaldatainitiative.org/) may wish to use the [PASTA API](https://pastaplus-core.readthedocs.io/en/latest/doc_tree/pasta_api/data_package_manager_api.html#search-data-packages) to create a searchable data catalog on their website. This project includes example code supporting such functionality.
