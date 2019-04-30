@@ -1,4 +1,5 @@
 # PASTA-JavaScript-Search-Client
+
 Example HTML, CSS, and JavaScript for searching for items in a PASTA repository
 
 [Live demo](https://ble-lter.github.io/PASTA-JavaScript-Search-Client/public/demo.html)
@@ -23,7 +24,7 @@ You may want to adjust the layout and styles in the demo page to match your webs
 
 PASTA allows you to limit the number of results returned per page. If you do not wish to use pagination, set `PASTA_CONFIG["limit"]` to a number higher than the number of datasets available for your site.
 
-If you want pagination but do not need page links both above and below search results, simply replace the element ID in `PASTA_CONFIG["pagesBotElementId"]` (or `pagesTopElementId`) with an empty string, `""`. 
+If you want pagination but do not need page links both above and below search results, simply replace the element ID in `PASTA_CONFIG["pagesBotElementId"]` (or `pagesTopElementId`) with an empty string, `""`.
 
 ### Hiding Other Items
 
