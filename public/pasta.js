@@ -90,8 +90,6 @@ function setHtml(elId, innerHtml) {
    var el = document.getElementById(elId);
    if (el)
       el.innerHTML = innerHtml;
-   else
-      console.log("Could not find element with ID " + elId);
 }
 
 function downloadCsv(count) {
@@ -330,12 +328,14 @@ window.onload = function () {
       initCollapsible(expanded);
 
       var sortControl = document.getElementById("visibleSort");
-      sortControl.onchange = function () {
-         var hiddenSortControl = document.getElementById("sort");
-         hiddenSortControl.value = this.options[this.selectedIndex].value;
-         var form = document.getElementById("dataSearchForm");
-         form.submit();
-      };
+      if (sortControl) {
+         sortControl.onchange = function () {
+            var hiddenSortControl = document.getElementById("sort");
+            hiddenSortControl.value = this.options[this.selectedIndex].value;
+            var form = document.getElementById("dataSearchForm");
+            form.submit();
+         };
+      }   
    }
 
    function makeQueryUrlBase(userQuery, coreArea, creator, sYear, eYear, datayear, pubyear,
@@ -411,23 +411,32 @@ window.onload = function () {
    var sortParam = getParameterByName("sort");
    if (!pageStart) pageStart = 0;
 
-   document.forms.dataSearchForm.q.value = query;
-   document.forms.dataSearchForm.creator.value = creator;
-   document.forms.dataSearchForm.identifier.value = pkgId;
-   document.forms.dataSearchForm.taxon.value = taxon;
-   document.forms.dataSearchForm.geo.value = geo;
-   document.forms.dataSearchForm.data_year.checked = datayear;
-   document.forms.dataSearchForm.publish_year.checked = pubyear;
+   if (document.forms.dataSearchForm.creator)
+      document.forms.dataSearchForm.creator.value = creator;
+   if (document.forms.dataSearchForm.identifier)
+      document.forms.dataSearchForm.identifier.value = pkgId;
+   if (document.forms.dataSearchForm.taxon)
+      document.forms.dataSearchForm.taxon.value = taxon;
+   if (document.forms.dataSearchForm.geo)
+      document.forms.dataSearchForm.geo.value = geo;
+   if (document.forms.dataSearchForm.data_year)
+      document.forms.dataSearchForm.data_year.checked = datayear;
+   if (document.forms.dataSearchForm.publish_year)
+      document.forms.dataSearchForm.publish_year.checked = pubyear;
    var coreArea = setSelectValue("coreArea", coreAreaParam);
    var sortBy = setSelectValue("visibleSort", sortParam);
-   document.forms.dataSearchForm.sort.value = sortBy;
-
-   if (isInteger(sYear))
-      document.forms.dataSearchForm.min_year.value = sYear;
+   if (sortBy && document.forms.dataSearchForm.sort)
+      document.forms.dataSearchForm.sort.value = sortBy;
    else
+      sortBy = document.forms.dataSearchForm.sort.value;
+
+   if (isInteger(sYear) && document.forms.dataSearchForm.min_year)
+      document.forms.dataSearchForm.min_year.value = sYear;
+   else if (document.forms.dataSearchForm.min_year)
       sYear = document.forms.dataSearchForm.min_year.value;
    if (!isInteger(eYear)) eYear = (new Date()).getFullYear()
-   document.forms.dataSearchForm.max_year.value = eYear;
+   if (document.forms.dataSearchForm.max_year)
+      document.forms.dataSearchForm.max_year.value = eYear;
 
    initApp(expanded);
 
@@ -436,6 +445,8 @@ window.onload = function () {
       datayear, pubyear, pkgId, taxon, geo, sortBy)
    searchPasta(PASTA_CONFIG["limit"], pageStart);
 
-   makeAutocomplete("creator", PASTA_LOOKUP["responsibleParties"]);
-   makeAutocomplete("taxon", PASTA_LOOKUP["taxonomic"]);
+   if ("PASTA_LOOKUP" in window) {
+      makeAutocomplete("creator", PASTA_LOOKUP["responsibleParties"]);
+      makeAutocomplete("taxon", PASTA_LOOKUP["taxonomic"]);
+   }
 };
