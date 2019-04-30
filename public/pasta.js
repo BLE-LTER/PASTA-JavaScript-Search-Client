@@ -196,7 +196,8 @@ function successCallback(headers, response) {
    var pageBotElementId = PASTA_CONFIG["pagesBotElementId"];
    showPageLinks(count, limit, showPages, currentStart, pageTopElementId);
    showPageLinks(count, limit, showPages, currentStart, pageBotElementId);
-   showResultCount("", count, limit, currentStart, PASTA_CONFIG["countElementId"]);
+   var query = getParameterByName("q");
+   showResultCount(query, count, limit, currentStart, PASTA_CONFIG["countElementId"]);
 }
 
 // Function to call if CORS request fails
