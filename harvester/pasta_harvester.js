@@ -8,12 +8,12 @@ var fetch = require("node-fetch");
 var parseString = require("xml2js").parseString;
 
 const PASTA_CONFIG = {
-   "server": "https://pasta.lternet.edu/package/search/eml?",  // PASTA server
-   "filter": "&fq=scope:knb-lter-nwt",  // Filter results for an LTER site
-   "limit": 2000,  // Max number of results to retrieve per page
+   "server": "https://pasta.lternet.edu/package/search/eml?", // PASTA server
+   "filter": "&fq=scope:knb-lter-nwt", // Filter results for an LTER site
+   "limit": 2000, // Max number of results to retrieve per page
    "fields": [
       "taxonomic",
-      "responsibleParties"
+      "author"
    ]
 };
 
@@ -22,6 +22,7 @@ const OUT_FILE = "pasta_lookup.js";
 
 function parseTaxa(doc) {
    var invalid = ["Division or Phylum", "kingdom", "phylum", "class", "order", "family", "genus", "species"].map(v => v.toLowerCase());
+
    function isValid(taxa) {
       return taxa && invalid.indexOf(taxa.toLowerCase()) === -1;
    }
@@ -30,11 +31,19 @@ function parseTaxa(doc) {
 
 
 function parsePeople(doc) {
-   return doc["responsibleParties"][0].split("\n").map(n => n.trim()).filter(n => n);
+   var authorNodes = doc["authors"][0]["author"];
+   var authors = [];
+   if (authorNodes) {
+      for (var authorIndex = 0; authorIndex < authorNodes.length; authorIndex++) {
+         authors.push(authorNodes[authorIndex]);
+      }
+   }
+   return authors;
 }
 
 
 function fetchChunk(uri) {
+   console.log(uri);
    return new Promise(function (resolve, reject) {
       fetch(uri).then(function (response) {
          response.text().then(function (text) {
@@ -48,8 +57,8 @@ function fetchChunk(uri) {
                   let doc = result["resultset"]["document"][j];
                   if (PASTA_CONFIG["fields"].indexOf("taxonomic") > -1)
                      chunk["taxonomic"] = chunk["taxonomic"].concat(parseTaxa(doc));
-                  if (PASTA_CONFIG["fields"].indexOf("responsibleParties") > -1)
-                     chunk["responsibleParties"] = chunk["responsibleParties"].concat(parsePeople(doc));
+                  if (PASTA_CONFIG["fields"].indexOf("author") > -1)
+                     chunk["author"] = chunk["author"].concat(parsePeople(doc));
                }
                resolve(chunk);
             });
