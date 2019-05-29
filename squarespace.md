@@ -49,4 +49,4 @@ whole website.
 ## Acknowledgments
 
 Thank you, Sarah Elmendorf, for these instructions!  See her result at [NWT's
-data page](http://niwot.colorado.edu/data).
+data page](https://nwt.lternet.edu/data-catalog).
