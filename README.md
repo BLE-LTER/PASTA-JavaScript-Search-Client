@@ -20,6 +20,8 @@ Start with the demo in the `public` folder and adapt the code for your site.  Se
 
 You may want to adjust the layout and styles in the demo page to match your website.
 
+Not using static HTML?  That's OK.  See for example instructions for [Squarespace](squarespace.md).
+
 ### Pagination
 
 PASTA allows you to limit the number of results returned per page. If you do not wish to use pagination, set `PASTA_CONFIG["limit"]` to a number higher than the number of datasets available for your site.
