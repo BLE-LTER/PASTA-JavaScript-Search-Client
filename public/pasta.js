@@ -422,6 +422,7 @@ window.onload = function () {
    var sortParam = getParameterByName("sort");
    if (!pageStart) pageStart = 0;
 
+   document.forms.dataSearchForm.q.value = query;
    if (document.forms.dataSearchForm.creator)
       document.forms.dataSearchForm.creator.value = creator;
    if (document.forms.dataSearchForm.identifier)
