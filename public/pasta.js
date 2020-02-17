@@ -13,7 +13,8 @@ var PASTA_CONFIG = {
    "pagesTopElementId": "paginationTop", // Element to display result page links above results
    "pagesBotElementId": "paginationBot", // Element to display result page links below results
    "showPages": 5, // MUST BE ODD NUMBER! Max number of page links to show
-   "sortDiv": "sortDiv" // Element with interactive sort options
+   "sortDiv": "sortDiv", // Element with interactive sort options
+   "useCiteService": true // true if we should use EDI Cite service to build citations instead of building from PASTA results
 };
 
 var QUERY_URL = ""; // Query URL without row limit or start parameter
@@ -29,19 +30,83 @@ function getParameterByName(name, url) {
    return decodeURIComponent(results[2].replace(/\+/g, " ")).trim();
 }
 
-// Parse Pasta search results into HTML
-function parsePastaResults(xmlDoc) {
-   var docs = xmlDoc.getElementsByTagName("document");
+// Parse citation dictionary into HTML
+function buildHtml(citations) {
    var html = [];
-   var sortDiv = document.getElementById(PASTA_CONFIG["sortDiv"]);
-   if (sortDiv) {
-      if (docs.length)
-         sortDiv.style.display = "block";
-      else
-         sortDiv.style.display = "none";
+   var citationCount = Object.keys(citations).length;
+
+   for (var i = 0; i < citationCount; i++) {
+      var citation = citations[i];
+      var authors = citation["authors"];
+      var date = (citation["pub_year"]) ? " Published " + citation["pub_year"] + "" : "";
+      // default ESIP formatting has trailing period after DOI
+      var link = (citation["doi"]) ? citation["doi"].slice(0, -1) : "https://portal.edirepository.org/nis/mapbrowse?packageid=" + citation["pid"];
+      var title = '<a rel="external noopener" href="' + link + '" target="_blank">' + citation["title"] + '</a>';
+      var row = '<p><span class="dataset-title">' + title +
+         '</span><br><span class="dataset-author">' + authors + date +
+         '</span></p>';
+      html.push(row);
    }
-   for (var i = 0; i < docs.length; i++) {
-      var doc = docs[i];
+   if (citationCount) {
+      return html.join("\n");
+   } else {
+      return "<p>Your search returned no results.</p>";
+   }
+}
+
+// Download citations to a dictionary keyed by package ID
+function getCitations(packageIds) {
+   var header = {
+      "Accept": "application/json"
+   };
+   var callsRemaining = packageIds.length;
+   var baseUri = "https://cite.edirepository.org/cite/";
+   var citations = {};
+
+   packageIds.forEach(function (pid, index) {
+      var uri = baseUri + pid;
+      makeCorsRequest(
+         uri,
+         header,
+         (function (index) { // enable the callback to know which package this is
+            return function (headers, response) {
+               var citation = JSON.parse(response);
+               citation["pid"] = packageIds[index];
+               citations[index] = citation;
+
+               --callsRemaining;
+               if (callsRemaining <= 0) {
+                  var html = buildHtml(citations);
+                  document.getElementById("searchResults").innerHTML = html;
+                  showLoading(false);
+               }
+            };
+         })(index), // immediately call the closure with the current index value
+         errorCallback
+      );
+   });
+}
+
+// Build dataset citations using Cite service, with package IDs from PASTA
+function buildCitationsFromCite(pastaDocs) {
+   var packageIds = [];
+   for (var i = 0; i < pastaDocs.length; i++) {
+      var doc = pastaDocs[i];
+      packageIds.push(doc.getElementsByTagName("packageid")[0].childNodes[0].nodeValue);
+   }
+   if (packageIds.length) {
+      getCitations(packageIds);
+   } else {
+      document.getElementById("searchResults").innerHTML = "<p>Your search returned no results.</p>";
+      showLoading(false);
+   }
+}
+
+// Build dataset citations from PASTA XML
+function buildCitationsFromPasta(pastaDocs) {
+   var html = [];
+   for (var i = 0; i < pastaDocs.length; i++) {
+      var doc = pastaDocs[i];
       var authorNodes = doc.getElementsByTagName("author");
       var authors = [];
       for (var authorIndex = 0; authorIndex < authorNodes.length; authorIndex++) {
@@ -73,11 +138,14 @@ function parsePastaResults(xmlDoc) {
          '</span></p>';
       html.push(row);
    }
-   if (docs.length) {
-      return html.join("\n");
+   var resultHtml;
+   if (html.length) {
+      resultHtml = html.join("\n");
    } else {
-      return "<p>Your search returned no results.</p>";
+      resultHtml = "<p>Your search returned no results.</p>";
    }
+   document.getElementById("searchResults").innerHTML = resultHtml;
+   showLoading(false);
 }
 
 function showLoading(isLoading) {
@@ -168,7 +236,7 @@ function downloadCsv(count) {
 
    for (var i = 0; i < calls; i++) {
       var url = baseUri + start;
-      makeCorsRequest(url, addChunk, errorCallback);
+      makeCorsRequest(url, null, addChunk, errorCallback);
       start += limit;
    }
 
@@ -184,12 +252,22 @@ function successCallback(headers, response) {
       return html;
    }
 
-   showLoading(false);
-
    // Write results to page
    var parser = new DOMParser();
    var xmlDoc = parser.parseFromString(response, "text/xml");
-   setHtml(PASTA_CONFIG["resultsElementId"], parsePastaResults(xmlDoc));
+   var docs = xmlDoc.getElementsByTagName("document");
+   var sortDiv = document.getElementById(PASTA_CONFIG["sortDiv"]);
+   if (sortDiv) {
+      if (docs.length)
+         sortDiv.style.display = "block";
+      else
+         sortDiv.style.display = "none";
+   }
+   if (PASTA_CONFIG["useCiteService"]) {
+      buildCitationsFromCite(docs);
+   } else {
+      buildCitationsFromPasta(docs);
+   }
    var count = parseInt(xmlDoc.getElementsByTagName("resultset")[0].getAttribute("numFound"));
    setHtml(PASTA_CONFIG["csvElementId"], makeCsvLink(count));
 
@@ -228,7 +306,7 @@ function searchPasta(limit, pageStart) {
    var url = QUERY_URL + params;
    showUrl(url);
    showLoading(true);
-   makeCorsRequest(url, successCallback, errorCallback);
+   makeCorsRequest(url, null, successCallback, errorCallback);
 }
 
 function initCollapsible(expanded) {
