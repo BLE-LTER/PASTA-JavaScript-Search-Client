@@ -1,7 +1,12 @@
 "use strict";
 
+// CORS stand for Cross Origin Resource Sharing
+// which is a standard for one domain to request things from another
+// like how we are requesting stuff from PASTA regular API and the Cite service
+
 // adapted from https://www.html5rocks.com/en/tutorials/cors/
 // Create the XHR object.
+// XHR is short for XMLHttpRequest 
 function createCORSRequest(method, url) {
    var xhr = new XMLHttpRequest();
    if ("withCredentials" in xhr) {
@@ -34,7 +39,7 @@ function makeCorsRequest(url, headerDict, successCallback, errorCallback) {
          var parts = headers[i].split(": ");
          header_dict[parts[0].toLowerCase()] = parts[1];
       }
-      successCallback(header_dict, xhr.responseText);
+      successCallback(header_dict, xhr.responseText); // what to do when cors request fails
    };
    xhr.onerror = function () {
       errorCallback();

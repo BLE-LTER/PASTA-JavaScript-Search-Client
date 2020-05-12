@@ -1,7 +1,8 @@
 // Requires cors.js and pagination.js to be loaded first
 
-"use strict";
+"use strict"; // a directive indicating that code should be executed in strict mode
 
+// edit these params
 var PASTA_CONFIG = {
    "server": "https://pasta.lternet.edu/package/search/eml?", // PASTA server
    "filter": "&fq=scope:knb-lter-nwt", // Filter results for an LTER site
@@ -19,22 +20,28 @@ var PASTA_CONFIG = {
 
 var QUERY_URL = ""; // Query URL without row limit or start parameter
 
-// Get URL arguments
+// Get HTML elements' "name" attribute to construct URL argument
 function getParameterByName(name, url) {
-   if (!url) url = window.location.href;
-   name = name.replace(/[\[\]]/g, "\\$&");
-   var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
-      results = regex.exec(url);
-   if (!results) return null;
-   if (!results[2]) return "";
-   return decodeURIComponent(results[2].replace(/\+/g, " ")).trim();
+   if (!url) url = window.location.href; // if there's no existing url, url is the active tab's url
+   name = name.replace(/[\[\]]/g, "\\$&"); 
+   // JS regex literals are delimited by forward slashes
+   // "g" modifier is used to perform a global match, as opposed to stopping after first match
+   // above line replaces all square brackets with "$&", which is?
+   var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"), // create new regex literal composed of 
+      results = regex.exec(url); // exec() searches the string named url for matches of regular exp regex
+   if (!results) return null; // if there are no matches return NULL
+   if (!results[2]) return ""; //if there are no 
+   return decodeURIComponent(results[2].replace(/\+/g, " ")).trim(); // otherwise return results after replacing "+" with empty spaces and trimming trailing and leading spaces
 }
 
 // Parse citation dictionary into HTML
+// citation dictionary is from PASTA Cite service in JSON format
 function buildHtml(citations) {
-   var html = [];
-   var citationCount = Object.keys(citations).length;
+   var html = []; // init empty array
+   var citationCount = Object.keys(citations).length; // get number of citations
 
+// iterate from 0 to citationCount
+// build HTML table
    for (var i = 0; i < citationCount; i++) {
       var citation = citations[i];
       var authors = citation["authors"];
@@ -45,8 +52,11 @@ function buildHtml(citations) {
       var row = '<p><span class="dataset-title">' + title +
          '</span><br><span class="dataset-author">' + authors + date +
          '</span></p>';
-      html.push(row);
+      html.push(row); // add new row to html array
    }
+
+   // if no citationCount then no results
+   // otherwise join items in html array together with newline in between
    if (citationCount) {
       return html.join("\n");
    } else {
@@ -55,26 +65,29 @@ function buildHtml(citations) {
 }
 
 // Download citations to a dictionary keyed by package ID
-function getCitations(packageIds) {
+// from PASTA cite service
+function getCitationsFromCite(packageIds) {
    var header = {
       "Accept": "application/json"
    };
    var callsRemaining = packageIds.length;
    var baseUri = "https://cite.edirepository.org/cite/";
    var citations = {};
-
-   packageIds.forEach(function (pid, index) {
+   
+   // forEach method seems like R's apply family 
+   packageIds.forEach(function (pid, index) { // not sure where pid and index arguments are supplied
       var uri = baseUri + pid;
-      makeCorsRequest(
+      makeCorsRequest(  // lots of API calls to the Cite service on top of the initial call to get package IDs
          uri,
          header,
+         // modify the default successCallback
          (function (index) { // enable the callback to know which package this is
-            return function (headers, response) {
-               var citation = JSON.parse(response);
+            return function (headers, response) { // headers and response seem to be supplied by 
+               var citation = JSON.parse(response); // makeCorsRequest was actually called and now the response is parsed
                citation["pid"] = packageIds[index];
                citations[index] = citation;
 
-               --callsRemaining;
+               --callsRemaining; // increment callsRemaining by -1
                if (callsRemaining <= 0) {
                   var html = buildHtml(citations);
                   document.getElementById("searchResults").innerHTML = html;
@@ -95,7 +108,7 @@ function buildCitationsFromCite(pastaDocs) {
       packageIds.push(doc.getElementsByTagName("packageid")[0].childNodes[0].nodeValue);
    }
    if (packageIds.length) {
-      getCitations(packageIds);
+      getCitationsFromCite(packageIds);
    } else {
       document.getElementById("searchResults").innerHTML = "<p>Your search returned no results.</p>";
       showLoading(false);
@@ -148,6 +161,7 @@ function buildCitationsFromPasta(pastaDocs) {
    showLoading(false);
 }
 
+// whether the data catalog shows a loading status or not 
 function showLoading(isLoading) {
    var x = document.getElementById("loading-div");
    if (isLoading) {
@@ -159,12 +173,14 @@ function showLoading(isLoading) {
    }
 }
 
+// modify a HTML element by its ID
 function setHtml(elId, innerHtml) {
    var el = document.getElementById(elId);
    if (el)
       el.innerHTML = innerHtml;
 }
 
+// generate a CSV out of results
 function downloadCsv(count) {
    if (count) showLoading(true);
    var limit = 2000;
@@ -244,6 +260,7 @@ function downloadCsv(count) {
 }
 
 // Function to call if CORS request is successful
+// this gets the ID and calls the citation-building functions
 function successCallback(headers, response) {
    function makeCsvLink(count) {
       if (!count) return "";
@@ -255,7 +272,7 @@ function successCallback(headers, response) {
    // Write results to page
    var parser = new DOMParser();
    var xmlDoc = parser.parseFromString(response, "text/xml");
-   var docs = xmlDoc.getElementsByTagName("document");
+   var docs = xmlDoc.getElementsByTagName("document"); // I think this is where the package IDs are stored in the PASTA API responsde
    var sortDiv = document.getElementById(PASTA_CONFIG["sortDiv"]);
    if (sortDiv) {
       if (docs.length)
