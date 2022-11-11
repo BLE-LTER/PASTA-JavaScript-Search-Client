@@ -1,5 +1,7 @@
 # PASTA-JavaScript-Search-Client
 
+[![DOI](https://zenodo.org/badge/129800607.svg)](https://zenodo.org/badge/latestdoi/129800607)
+
 Example HTML, CSS, and JavaScript for searching for items in a PASTA repository
 
 [Live demo](https://ble-lter.github.io/PASTA-JavaScript-Search-Client/public/demo.html)
