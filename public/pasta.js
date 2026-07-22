@@ -14,7 +14,9 @@ var PASTA_CONFIG = {
    "pagesBotElementId": "paginationBot", // Element to display result page links below results
    "showPages": 5, // MUST BE ODD NUMBER! Max number of page links to show
    "sortDiv": "sortDiv", // Element with interactive sort options
-   "useCiteService": true // true if we should use EDI Cite service to build citations instead of building from PASTA results
+   "useCiteService": true, // true if we should use EDI Cite service to build citations instead of building from PASTA results
+   "EdiApiAccessKey": "PASTE_YOUR_KEY_HERE", // REQUIRED: EDI API access key for using their REST API or accessing landing pages without a human verification step.
+   "UseDoiLinks": false // true if we should use DOI links for datasets that have a DOI, false to use PASTA landing page links
 };
 
 var QUERY_URL = ""; // Query URL without row limit or start parameter
@@ -34,13 +36,19 @@ function getParameterByName(name, url) {
 function buildHtml(citations) {
    var html = [];
    var citationCount = Object.keys(citations).length;
+   var portal_base = "https://portal.edirepository.org/nis/mapbrowse?key=" + PASTA_CONFIG["EdiApiAccessKey"] + "&packageid=";
 
    for (var i = 0; i < citationCount; i++) {
       var citation = citations[i];
       var authors = citation["authors"];
       var date = (citation["pub_year"]) ? " Published " + citation["pub_year"] + "" : "";
-      // default ESIP formatting has trailing period after DOI
-      var link = (citation["doi"]) ? citation["doi"].slice(0, -1) : "https://portal.edirepository.org/nis/mapbrowse?packageid=" + citation["pid"];
+      var link = "";
+      if (PASTA_CONFIG["UseDoiLinks"] && citation["doi"]) {
+         // default ESIP formatting has trailing period after DOI
+         link = citation["doi"].slice(0, -1);
+      } else {
+         link = portal_base + citation["pid"];
+      }
       var title = '<a rel="external noopener" href="' + link + '" target="_blank" aria-label="open data in new tab">' + citation["title"] + '</a>';
       var row = '<p><span class="dataset-title">' + title +
          '</span><br><span class="dataset-author">' + authors + date +
@@ -105,6 +113,8 @@ function buildCitationsFromCite(pastaDocs) {
 // Build dataset citations from PASTA XML
 function buildCitationsFromPasta(pastaDocs) {
    var html = [];
+   var portal_base = "https://portal.edirepository.org/nis/mapbrowse?key=" + PASTA_CONFIG["EdiApiAccessKey"] + "&packageid=";
+
    for (var i = 0; i < pastaDocs.length; i++) {
       var doc = pastaDocs[i];
       var authorNodes = doc.getElementsByTagName("author");
@@ -121,14 +131,19 @@ function buildCitationsFromPasta(pastaDocs) {
          date = "";
       }
       var link = "";
-      try {
-         var doi = doc.getElementsByTagName("doi")[0].childNodes[0].nodeValue;
-         if (doi.slice(0, 4) === "doi:") {
-            doi = doi.slice(4);
+      if (PASTA_CONFIG["UseDoiLinks"]) {
+         try {
+            var doi = doc.getElementsByTagName("doi")[0].childNodes[0].nodeValue;
+            if (doi.slice(0, 4) === "doi:") {
+               doi = doi.slice(4);
+            }
+            link = "http://dx.doi.org/" + doi;
+         } catch (err) {
+            link = (portal_base +
+               doc.getElementsByTagName("packageid")[0].childNodes[0].nodeValue);
          }
-         link = "http://dx.doi.org/" + doi;
-      } catch (err) {
-         link = ("https://portal.edirepository.org/nis/mapbrowse?packageid=" +
+      } else {
+         link = (portal_base +
             doc.getElementsByTagName("packageid")[0].childNodes[0].nodeValue);
       }
       var title = '<a rel="external noopener" href="' + link + '" target="_blank" aria-label="open data in new tab">' +
@@ -460,7 +475,7 @@ window.onload = function () {
             return '"' + text + '"';
       }
 
-      var base = PASTA_CONFIG["server"];
+      var base = PASTA_CONFIG["server"] + "key=" + PASTA_CONFIG["EdiApiAccessKey"] + "&";
       var fields = ["title",
          "pubdate",
          "doi",

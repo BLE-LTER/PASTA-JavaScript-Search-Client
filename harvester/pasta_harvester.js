@@ -9,6 +9,7 @@ var parseString = require("xml2js").parseString;
 
 const PASTA_CONFIG = {
    "server": "https://pasta.lternet.edu/package/search/eml?", // PASTA server
+   "EdiApiAccessKey": "PASTE_YOUR_KEY_HERE", // REQUIRED: EDI API access key for using their REST API or accessing landing pages without a human verification step.
    "filter": "&fq=scope:knb-lter-nwt", // Filter results for an LTER site
    "limit": 2000, // Max number of results to retrieve per page
    "fields": [
@@ -103,7 +104,8 @@ function getUnique(array) {
 
 
 function makeBaseUri() {
-   const base = PASTA_CONFIG["server"];
+   const apiKey = "api_key=" + PASTA_CONFIG["EdiApiAccessKey"];
+   const base = PASTA_CONFIG["server"] + "key=" + apiKey + "&";
    const fields = PASTA_CONFIG["fields"].toString();
    const params = "fl=" + fields + "&defType=edismax&q=*" + encodeURI(PASTA_CONFIG["filter"]);
    const limit = "&rows=" + PASTA_CONFIG["limit"];

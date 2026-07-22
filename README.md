@@ -4,17 +4,33 @@
 
 Example HTML, CSS, and JavaScript for searching for items in a PASTA repository
 
-[Live demo](https://ble-lter.github.io/PASTA-JavaScript-Search-Client/public/demo.html)
+For a live demo, download the code, paste your EDI API Access Key into PASTA_CONFIG (see notes below) and open public.html in your browser. The key is required by EDI for requests to work.
 
-Want to try the demo for your site?
-
-1. Download and unzip this repository.
-2. In `public/pasta.js`, find the `PASTA_CONFIG` variable at the top of the file. Change its `filter` property to match your site. This probably just means swapping out the three letter acronym for your site's acronym. For example, to search the VCR LTER site, use `"&fq=scope:knb-lter-vcr"`. Save and close the file.
-3. Double-click demo.html.
+For an example of the catalog in use, see [BLE's Catalog](https://ble.lternet.edu/catalog).
 
 ## Motivation
 
 [LTER sites](https://lternet.edu/) which archive data at [EDI](https://environmentaldatainitiative.org/) may wish to use the [PASTA API](https://pastaplus-core.readthedocs.io/en/latest/doc_tree/pasta_api/data_package_manager_api.html#search-data-packages) to create a searchable data catalog on their website. This project includes example code supporting such functionality.
+
+## Prerequisite: API Access Key
+
+EDI requires API access keys when making requests to the REST API. To get one:
+
+1. https://auth.edirepository.org/auth/ui/signin
+2. Sign in.
+3. **Groups**.
+4. **New Group**.
+5. Name it `Authentication Group`, or whatever you want.
+6. Description: `Provides API access key for catalog searches`.
+7. Click **Add**.
+8. In the top right corner, click the dropdown next to your profile picture and click **Access Keys**.
+9. **New Key**.
+10. Name: `Catalog Access Key`.
+11. Principal: **Authentication Group** (or whatever you named it).
+12. For now, our recommendation is to leave the default valid date range of one year. Set a calendar reminder to update the key a year from now. This guidance may change as we and EDI get more experience using these keys.
+13. **Add**.
+14. Copy the key and save it offline.
+15. Open your local copy of **public/pasta.js** and paste your key in the `PASTA_CONFIG["EdiApiAccessKey"]` item.
 
 ## Usage for Your Site
 
@@ -23,6 +39,14 @@ Start with the demo in the `public` folder and adapt the code for your site.  Se
 You may want to adjust the layout and styles in the demo page to match your website.
 
 Not using static HTML?  That's OK.  See for example instructions for [Squarespace](squarespace.md).
+
+### Dataset Link Format
+
+The search results can link to datasets using their DOI or the direct `portal.edirepository.org` link. The DOI link is less likely to break, but the user has to go through a human verification step to see the dataset. If you use the direct EDI link, then you bypass the human verification step. Note that the direct link makes use of you EDI API Access Key.
+
+### Source for Building the HTML
+
+To build the HTML for search results, you can use PASTA results or EDI's cite service. The cite service is a little simpler, but the code handles both. See the `useCiteService` parameter in `PASTA_CONFIG`.
 
 ### Pagination
 
@@ -42,7 +66,7 @@ We use [Pixabay's autocomplete](https://github.com/Pixabay/JavaScript-autoComple
 
 Autocomplete requires creating a list of possible choices, and activating autocomplete for a given input via code in `pasta.js`.  The list is imported as a script containing a `PASTA_LOOKUP` variable with arrays of choices for each desired autocomplete category. Once you create your choice arrays, don't forget to enable autocomplete for the appropriate inputs.  See how the `creator` input was handled in `pasta.js` for an example.
 
-One way to generate the choice arrays is to harvest metadata for all datasets for your site from PASTA.  The `harvester` folder contains a `pasta_harvester.js` script demonstrating one way of doing that. Note that sometimes metadata is messy, such as taxonomy information which may include freeform text.  The harvester requires `Node.js` with the `node-fetch` and `xml2js` packages installed.
+One way to generate the choice arrays is to harvest metadata for all datasets for your site from PASTA.  The `harvester` folder contains a `pasta_harvester.js` script demonstrating one way of doing that. Note that sometimes metadata is messy, such as taxonomy information which may include freeform text.  The harvester requires `Node.js` with the `node-fetch` and `xml2js` packages installed. Be sure to update `PASTA_CONFIG["EdiApiAccessKey"]` and `PASTA_CONFIG["filter"]` with your key and your site acronym or desired filter.
 
 ### Caveats
 
