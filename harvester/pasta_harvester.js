@@ -8,8 +8,7 @@ var fetch = require("node-fetch");
 var parseString = require("xml2js").parseString;
 
 const PASTA_CONFIG = {
-   "server": "https://pasta.lternet.edu/package/search/eml?", // PASTA server
-   "EdiApiAccessKey": "PASTE_YOUR_KEY_HERE", // REQUIRED: EDI API access key for using their REST API or accessing landing pages without a human verification step.
+   "query_base_url": "/netlify/functions/edi-search?", // Server-side function to handle EDI search requests and add API key
    "filter": "&fq=scope:knb-lter-nwt", // Filter results for an LTER site
    "limit": 2000, // Max number of results to retrieve per page
    "fields": [
@@ -104,8 +103,7 @@ function getUnique(array) {
 
 
 function makeBaseUri() {
-   const apiKey = "api_key=" + PASTA_CONFIG["EdiApiAccessKey"];
-   const base = PASTA_CONFIG["server"] + "key=" + apiKey + "&";
+   const base = PASTA_CONFIG["query_base_url"];
    const fields = PASTA_CONFIG["fields"].toString();
    const params = "fl=" + fields + "&defType=edismax&q=*" + encodeURI(PASTA_CONFIG["filter"]);
    const limit = "&rows=" + PASTA_CONFIG["limit"];

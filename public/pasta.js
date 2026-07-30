@@ -3,7 +3,7 @@
 "use strict";
 
 var PASTA_CONFIG = {
-   "server": "https://pasta.lternet.edu/package/search/eml?", // PASTA server
+   "query_base_url": "/netlify/functions/edi-search?", // Server-side function to handle EDI search requests and add API key
    "filter": "&fq=scope:knb-lter-nwt", // Filter results for an LTER site
    "limit": 20, // Max number of results to retrieve per page
    "resultsElementId": "searchResults", // Element to contain results
@@ -15,8 +15,7 @@ var PASTA_CONFIG = {
    "showPages": 5, // MUST BE ODD NUMBER! Max number of page links to show
    "sortDiv": "sortDiv", // Element with interactive sort options
    "useCiteService": true, // true if we should use EDI Cite service to build citations instead of building from PASTA results
-   "EdiApiAccessKey": "PASTE_YOUR_KEY_HERE", // REQUIRED: EDI API access key for using their REST API or accessing landing pages without a human verification step.
-   "UseDoiLinks": false // true if we should use DOI links for datasets that have a DOI, false to use PASTA landing page links
+   "UseDoiLinks": true // true if we should use DOI links for datasets that have a DOI, false to use PASTA landing page links
 };
 
 var QUERY_URL = ""; // Query URL without row limit or start parameter
@@ -36,7 +35,7 @@ function getParameterByName(name, url) {
 function buildHtml(citations) {
    var html = [];
    var citationCount = Object.keys(citations).length;
-   var portal_base = "https://portal.edirepository.org/nis/mapbrowse?key=" + PASTA_CONFIG["EdiApiAccessKey"] + "&packageid=";
+   var portal_base = "https://portal.edirepository.org/nis/mapbrowse?packageid=";
 
    for (var i = 0; i < citationCount; i++) {
       var citation = citations[i];
@@ -113,7 +112,7 @@ function buildCitationsFromCite(pastaDocs) {
 // Build dataset citations from PASTA XML
 function buildCitationsFromPasta(pastaDocs) {
    var html = [];
-   var portal_base = "https://portal.edirepository.org/nis/mapbrowse?key=" + PASTA_CONFIG["EdiApiAccessKey"] + "&packageid=";
+   var portal_base = "https://portal.edirepository.org/nis/mapbrowse?packageid=";
 
    for (var i = 0; i < pastaDocs.length; i++) {
       var doc = pastaDocs[i];
@@ -475,7 +474,7 @@ window.onload = function () {
             return '"' + text + '"';
       }
 
-      var base = PASTA_CONFIG["server"] + "key=" + PASTA_CONFIG["EdiApiAccessKey"] + "&";
+      var base = PASTA_CONFIG["query_base_url"];
       var fields = ["title",
          "pubdate",
          "doi",

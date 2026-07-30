@@ -30,11 +30,45 @@ EDI requires API access keys when making requests to the REST API. To get one:
 12. For now, our recommendation is to leave the default valid date range of one year. Set a calendar reminder to update the key a year from now. This guidance may change as we and EDI get more experience using these keys.
 13. **Add**.
 14. Copy the key and save it offline.
-15. Open your local copy of **public/pasta.js** and paste your key in the `PASTA_CONFIG["EdiApiAccessKey"]` item.
+
+### Storing the Key Securely
+
+We do not recommend storing the API key in any form (encoded, split, etc.) in your public-facing code. Instead, store the key securely on your server or in the cloud. The example below describes how to do that with Netlify.
+
+1. Go to your Netlify site dashboard.
+2. **Project configuration > Environment variables**.
+3. **Add a variable > Add a single variable**.
+4. Key: `PASTA_API_KEY`
+5. Check **Contains secret values**.
+6. Paste the key in the boxes for **Production**, **Deploy Previews**, and **Branch deploys**.
+7. **Create variable**.
+8. Redeploy the site.
+
+The value will be available inside Netlify Functions as:
+
+```js
+process.env.PASTA_API_KEY
+```
+
+### Accessing the Key
+
+The key is accessed by a function on a server. In our example, we're using Netlify, but one could use CloudFare, AWS, Google Cloud, etc.  Our example function is in `edi-search.js` in the `public/netlify/functions` folder. Our Netlify site has been configured to look for functions in that folder. In the function, the key is retrieved with this line:
+
+```js
+const apiKey = process.env.PASTA_API_KEY;
+```
+
+To use the function, we specify the function address as a URL relative to the current website. Since the function is in the `netlify/functions` subfolder in the `edi-search.js` file, the path is as follows:
+
+```js
+const query_base_url = "/netlify/functions/edi-search"
+```
+
+Our PASTA client (`pasta.js`) adds the parameters for the search to the URL and sends the request. Netlify then uses the function to retrieve the API key and query PASTA, returning the results back to the PASTA client which renders the results for the browser.
 
 ## Usage for Your Site
 
-Start with the demo in the `public` folder and adapt the code for your site.  See the `PASTA_CONFIG` variable in `pasta.js` for basic configuration options.  For example, you will change `PASTA_CONFIG["filter"]` to filter results for your site. The example assumes the site used the knb-lter-[three letter acronym] pattern in its dataset metadata. If your site follows a different pattern, than change the filter accordingly. See the [PASTA documentation](https://pastaplus-core.readthedocs.io/en/latest/doc_tree/pasta_api/data_package_manager_api.html#search-data-packages) for possible query options.
+Start with the demo in the `public` folder and adapt the code for your site.  See the `PASTA_CONFIG` variable in `pasta.js` for basic configuration options.  For example, you will change `PASTA_CONFIG["filter"]` to filter results for your site. The example assumes the site used the knb-lter-[three letter acronym] pattern in its dataset metadata. If your site follows a different pattern, than change the filter accordingly. See the [PASTA documentation](https://pastaplus-core.readthedocs.io/en/latest/doc_tree/pasta_api/data_package_manager_api.html#search-data-packages) for possible query options.  You should also acquire an API key for PASTA and securely store it where your code can utilize it as described above. For a less secure but simpler example, see [EDI's example on obfuscating URLs](https://edirepository.org/resources/obsfucate).
 
 You may want to adjust the layout and styles in the demo page to match your website.
 
@@ -42,7 +76,7 @@ Not using static HTML?  That's OK.  See for example instructions for [Squarespac
 
 ### Dataset Link Format
 
-The search results can link to datasets using their DOI or the direct `portal.edirepository.org` link. The DOI link is less likely to break, but the user has to go through a human verification step to see the dataset. If you use the direct EDI link, then you bypass the human verification step. Note that the direct link makes use of you EDI API Access Key.
+The search results can link to datasets using their DOI or the direct `portal.edirepository.org` link. The DOI link is less likely to break, but it takes slightly longer to resolve, and the user has to go through a human verification step to see the dataset. If you use the direct EDI link, then it's possible to embed your API key to bypass the human verification step, but a user or bot can see the key in the network traffic so this is not as secure.
 
 ### Source for Building the HTML
 
