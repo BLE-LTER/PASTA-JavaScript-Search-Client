@@ -4,7 +4,7 @@
 
 Example HTML, CSS, and JavaScript for searching for items in a PASTA repository
 
-For a live demo, download the code, paste your EDI API Access Key into PASTA_CONFIG (see notes below) and open public.html in your browser. The key is required by EDI for requests to work.
+[Demo](https://pasta-js-search-client.netlify.app/)
 
 For an example of the catalog in use, see [BLE's Catalog](https://ble.lternet.edu/catalog).
 
@@ -52,16 +52,16 @@ process.env.PASTA_API_KEY
 
 ### Accessing the Key
 
-The key is accessed by a function on a server. In our example, we're using Netlify, but one could use CloudFare, AWS, Google Cloud, etc.  Our example function is in `edi-search.js` in the `public/netlify/functions` folder. Our Netlify site has been configured to look for functions in that folder. In the function, the key is retrieved with this line:
+The key is accessed by a function on a server. In our example, we're using Netlify, but one could use CloudFare, AWS, Google Cloud, etc.  Our example function is in `edi-search.js` in the `netlify/functions` folder. Our Netlify site has been configured to look for functions in that folder. In the function, the key is retrieved with this line:
 
 ```js
 const apiKey = process.env.PASTA_API_KEY;
 ```
 
-To use the function, we specify the function address as a URL relative to the current website. Since the function is in the `netlify/functions` subfolder in the `edi-search.js` file, the path is as follows:
+To use the function, we specify the function address as a URL relative to the current website. Since the function is one level up from the `public` folder in the `netlify/functions` subfolder in the `edi-search.js` file, we use a `.` to indicate going up one level and the path is as follows:
 
 ```js
-const query_base_url = "/netlify/functions/edi-search"
+const query_base_url = "/.netlify/functions/edi-search"
 ```
 
 Our PASTA client (`pasta.js`) adds the parameters for the search to the URL and sends the request. Netlify then uses the function to retrieve the API key and query PASTA, returning the results back to the PASTA client which renders the results for the browser.

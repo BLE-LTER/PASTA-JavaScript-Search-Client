@@ -8,7 +8,7 @@ var fetch = require("node-fetch");
 var parseString = require("xml2js").parseString;
 
 const PASTA_CONFIG = {
-   "query_base_url": "/netlify/functions/edi-search?", // Server-side function to handle EDI search requests and add API key
+   "query_base_url": "/.netlify/functions/edi-search?", // Server-side function to handle EDI search requests and add API key
    "filter": "&fq=scope:knb-lter-nwt", // Filter results for an LTER site
    "limit": 2000, // Max number of results to retrieve per page
    "fields": [
