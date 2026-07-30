@@ -52,19 +52,43 @@ process.env.PASTA_API_KEY
 
 ### Accessing the Key
 
-The key is accessed by a function on a server. In our example, we're using Netlify, but one could use CloudFare, AWS, Google Cloud, etc.  Our example function is in `edi-search.js` in the `netlify/functions` folder. Our Netlify site has been configured to look for functions in that folder. In the function, the key is retrieved with this line:
+The API key should be accessed only from server-side code. The general approach is:
+
+1. Store the key in a secret manager or environment variable provided by your hosting platform.
+2. Create a server-side endpoint that receives search requests from the browser.
+3. Read the API key from the environment.
+4. Forward the request to the PASTA API using the key.
+5. Return the results to the browser.
+
+This repository includes an example implementation using a Netlify Function (`netlify/functions/edi-search.js`), but the same pattern works on other platforms such as Cloudflare Workers, AWS Lambda, Google Cloud Functions, Azure Functions, and traditional web servers.
+
+In the Netlify example, the key is retrieved with:
 
 ```js
 const apiKey = process.env.PASTA_API_KEY;
 ```
 
-To use the function, we specify the function address as a URL relative to the current website. Since the function is one level up from the `public` folder in the `netlify/functions` subfolder in the `edi-search.js` file, we use a `.` to indicate going up one level and the path is as follows:
+To use the function, we call the Netlify Function endpoint, building a URL like this one:
 
 ```js
-const query_base_url = "/.netlify/functions/edi-search"
+const query_base_url = "/.netlify/functions/edi-search";
 ```
 
-Our PASTA client (`pasta.js`) adds the parameters for the search to the URL and sends the request. Netlify then uses the function to retrieve the API key and query PASTA, returning the results back to the PASTA client which renders the results for the browser.
+Our PASTA client (`pasta.js`) adds the parameters for the search to the URL and sends the request to the function. The function adds the API key, sends the request to PASTA, and returns the results. Because the key never reaches the browser, it is not exposed in page source code or client-side JavaScript.
+
+### Other Hosting Providers
+
+If you are not using Netlify, use your platform's equivalent secret-management and serverless-function features.
+
+Examples include:
+
+- Cloudflare Workers + Secrets
+- AWS Lambda + Environment Variables or AWS Secrets Manager
+- Google Cloud Functions + Secret Manager
+- Azure Functions + Application Settings or Key Vault
+- Traditional web servers using environment variables
+
+Regardless of platform, the key idea is the same: keep the API key on the server and proxy requests from the browser through server-side code. Do not embed the API key in public JavaScript, HTML, or URLs.
 
 ## Usage for Your Site
 
