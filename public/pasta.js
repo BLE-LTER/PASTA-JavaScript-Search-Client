@@ -7,7 +7,7 @@ var PASTA_CONFIG = {
    "filter": "&fq=scope:knb-lter-nwt", // Filter results for an LTER site
    "limit": 20, // Max number of results to retrieve per page
    "resultsElementId": "searchResults", // Element to contain results
-   "urlElementId": "searchUrl", // Element to display search URL
+   "urlElementId": "", // Element to display search URL
    "countElementId": "resultCount", // Element showing number of results
    "csvElementId": "csvDownload", // Element with link to download results as CSV
    "pagesTopElementId": "paginationTop", // Element to display result page links above results
